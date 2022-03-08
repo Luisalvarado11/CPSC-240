@@ -1,0 +1,298 @@
+     1                                  extern printf
+     2                                  extern scanf
+     3                                  extern sin
+     4                                  extern cos
+     5                                  global area
+     6                                  
+     7                                  segment .data ;Where we put all the text outpurs
+     8                                  ;declare pi
+     9 00000000 182D4454FB210940        pi: dq 0x400921FB54442D18
+    10                                  
+    11                                  ; DECLARING TEXT
+    12 00000008 57652074616B652063-     text db "We take care of all your triangles. ",10,0
+    12 00000011 617265206F6620616C-
+    12 0000001A 6C20796F7572207472-
+    12 00000023 69616E676C65732E20-
+    12 0000002C 0A00               
+    13                                  
+    14 0000002E 506C6561736520656E-     text2 db "Please enter your name: ",0
+    14 00000037 74657220796F757220-
+    14 00000040 6E616D653A2000     
+    15                                  
+    16 00000047 257300                  name db "%s", 0
+    17                                  
+    18 0000004A 476F6F646D6F726E69-     text3 db "Goodmorning %s, please enter the length of slide 1, slide 2, and size(degrees) "
+    18 00000053 6E672025732C20706C-
+    18 0000005C 6561736520656E7465-
+    18 00000065 7220746865206C656E-
+    18 0000006E 677468206F6620736C-
+    18 00000077 69646520312C20736C-
+    18 00000080 69646520322C20616E-
+    18 00000089 642073697A65286465-
+    18 00000092 67726565732920     
+    19 00000099 6F662074686520696E-           db "of the included angle between them as real float numbers. Seperate the numbers by white "
+    19 000000A2 636C7564656420616E-
+    19 000000AB 676C65206265747765-
+    19 000000B4 656E207468656D2061-
+    19 000000BD 73207265616C20666C-
+    19 000000C6 6F6174206E756D6265-
+    19 000000CF 72732E205365706572-
+    19 000000D8 61746520746865206E-
+    19 000000E1 756D62657273206279-
+    19 000000EA 20776869746520     
+    20 000000F1 73706163652C20616E-           db "space, and be sure to press <enter> after the last inputted number.",10,0
+    20 000000FA 642062652073757265-
+    20 00000103 20746F207072657373-
+    20 0000010C 203C656E7465723E20-
+    20 00000115 616674657220746865-
+    20 0000011E 206C61737420696E70-
+    20 00000127 7574746564206E756D-
+    20 00000130 6265722E0A00       
+    21                                  
+    22 00000136 256C6620256C662025-     input_float3 db "%lf %lf %lf",0
+    22 0000013F 6C6600             
+    23                                  
+    24 00000142 5468616E6B20796F75-     text4 db "Thank you %s. You have entered %.7lf %.7lf %.7lf", 10,0
+    24 0000014B 2025732E20596F7520-
+    24 00000154 6861766520656E7465-
+    24 0000015D 72656420252E376C66-
+    24 00000166 20252E376C6620252E-
+    24 0000016F 376C660A00         
+    25                                  
+    26                                  ;valid inputs that are non-negative
+    27 00000174 546865206172656120-     area_output db "The area of your triangle is %.7lf square units",10,0
+    27 0000017D 6F6620796F75722074-
+    27 00000186 7269616E676C652069-
+    27 0000018F 7320252E376C662073-
+    27 00000198 717561726520756E69-
+    27 000001A1 74730A00           
+    28 000001A5 54686520706172616D-     parimeter_output db "The parameter is %.5lf linear units",10,0
+    28 000001AE 657465722069732025-
+    28 000001B7 2E356C66206C696E65-
+    28 000001C0 617220756E6974730A-
+    28 000001C9 00                 
+    29 000001CA 546865206172656120-     goodbye_output db "The area will now be sent to the driver function", 10,0
+    29 000001D3 77696C6C206E6F7720-
+    29 000001DC 62652073656E742074-
+    29 000001E5 6F2074686520647269-
+    29 000001EE 7665722066756E6374-
+    29 000001F7 696F6E0A00         
+    30                                  
+    31                                  ;invalid inputs
+    32                                  ;error db "Unfortunately, one of your inputs is invalid, Please run this program again",10,0
+    33                                  ;error2 db "An integer zero will now be sent to the operating system. Have a good day bye", 10,0
+    34                                  
+    35                                  segment .bss ;
+    36 00000000 <res 00000040>          user resb 64 ; array of bites for user
+    37 00000040 <res 00000008>          perimeter: resq 1 ; resq = reserve n qwords (here, n = 1)
+    38 00000048 <res 00000008>          area_: resq 1
+    39                                  
+    40                                  segment .text
+    41                                  area:
+    42                                  
+    43 00000000 55                      push    rbp
+    44 00000001 4889E5                  mov     rbp,rsp
+    45 00000004 53                      push    rbx
+    46 00000005 51                      push    rcx
+    47 00000006 52                      push    rdx
+    48 00000007 57                      push    rdi
+    49 00000008 4150                    push    r8
+    50 0000000A 4151                    push    r9
+    51 0000000C 4152                    push    r10
+    52 0000000E 4153                    push    r11
+    53 00000010 4154                    push    r12
+    54 00000012 4155                    push    r13
+    55 00000014 4156                    push    r14
+    56 00000016 4157                    push    r15
+    57 00000018 9C                      pushf
+    58                                  
+    59                                  ;Displaying text 1 and 2
+    60 00000019 6A00                    push qword 0
+    61                                  ;Display a prompt message asking for inputs
+    62 0000001B B800000000              mov rax, 0
+    63 00000020 BF00000000              mov rdi, 0
+    64 00000025 48BF-                   mov rdi, text ; we take care of all your triangles
+    64 00000027 [0800000000000000] 
+    65 0000002F E8(00000000)            call printf
+    66 00000034 58                      pop rax
+    67                                  
+    68 00000035 6A00                    push qword 0
+    69                                  ;display the text2
+    70 00000037 B800000000              mov rax, 0
+    71 0000003C BF00000000              mov rdi, 0
+    72 00000041 48BF-                   mov rdi, text2
+    72 00000043 [2E00000000000000] 
+    73 0000004B E8(00000000)            call printf
+    74 00000050 58                      pop rax
+    75                                  
+    76                                  ;Enter Name of user
+    77 00000051 6A00                    push qword 0
+    78 00000053 B800000000              mov rax,0
+    79 00000058 48BF-                   mov rdi, name
+    79 0000005A [4700000000000000] 
+    80 00000062 48BE-                   mov rsi, user
+    80 00000064 [0000000000000000] 
+    81 0000006C E8(00000000)            call scanf
+    82 00000071 58                      pop rax
+    83                                  
+    84                                  ;display text #3 "Goodmorning Luis,....."
+    85 00000072 6A00                    push qword 0
+    86 00000074 B800000000              mov rax, 0
+    87 00000079 48BF-                   mov rdi, text3
+    87 0000007B [4A00000000000000] 
+    88 00000083 48BE-                   mov rsi, user
+    88 00000085 [0000000000000000] 
+    89 0000008D E8(00000000)            call printf
+    90 00000092 58                      pop rax
+    91                                  
+    92                                  ;inputting 3 floats
+    93 00000093 6AFF                    push qword -1
+    94 00000095 6AFE                    push qword -2
+    95 00000097 6AFD                    push qword -3
+    96 00000099 B800000000              mov rax, 0
+    97 0000009E 48BF-                   mov rdi, input_float3  ;"%lf%lf%lf"
+    97 000000A0 [3601000000000000] 
+    98 000000A8 4889E6                  mov rsi, rsp                   ;rsi points to first quadword on the stack
+    99 000000AB 4889E2                  mov rdx, rsp
+   100 000000AE 4883C208                add rdx, 8                     ;rdx points to second quadword on the stack
+   101 000000B2 4889E1                  mov rcx, rsp
+   102 000000B5 4883C110                add rcx, 16                    ;rcx points to third quadword on the stack
+   103 000000B9 E8(00000000)            call scanf
+   104 000000BE F2440F103C24            movsd xmm15, [rsp]
+   105 000000C4 F2440F10742408          movsd xmm14, [rsp+8]
+   106 000000CB F2440F106C2410          movsd xmm13, [rsp+16]
+   107 000000D2 58                      pop rax                        ;Reverse the previous "push qword -3"
+   108 000000D3 58                      pop rax                        ;Reverse the previous "push qword -2"
+   109 000000D4 58                      pop rax                        ;Reverse the previous "push qword -1"
+   110                                  
+   111                                  
+   112                                  ;text 4
+   113 000000D5 6A00                    push qword 0
+   114 000000D7 B803000000              mov rax, 3
+   115 000000DC 48BF-                   mov rdi, text4
+   115 000000DE [4201000000000000] 
+   116 000000E6 48BE-                   mov rsi, user
+   116 000000E8 [0000000000000000] 
+   117 000000F0 F2410F10C7              movsd xmm0, xmm15
+   118 000000F5 F2410F10CE              movsd xmm1, xmm14
+   119 000000FA F2410F10D5              movsd xmm2, xmm13
+   120 000000FF E8(00000000)            call printf
+   121 00000104 58                      pop rax
+   122                                  
+   123                                  ;========================Area CALCULATIONS ====================================
+   124 00000105 F2440F102425-           movsd xmm12, [pi] ; xmm12 = pi(numerator)
+   124 0000010B [00000000]         
+   125 0000010F B8B4000000              mov rax, 180
+   126 00000114 F24C0F2AD8              cvtsi2sd xmm11, rax ; xmm11 = 180 (denominator)
+   127 00000119 F2450F5EE3              divsd xmm12, xmm11 ; xmm12 = pi/180
+   128 0000011E F2450F59EC              mulsd xmm13, xmm12 ; -- xmm13 = rad angle --
+   129                                  ; area = [A*B*sin(x)] / 2
+   130                                  ;xmm15 = Angle A
+   131                                  ;xmm14 = Angle B
+   132                                  ;xmm13 = Angle(DEGREES)
+   133 00000123 F2410F10C5              movsd xmm0, xmm13
+   134 00000128 E8(00000000)            call sin ; xmmo == sin(x)
+   135                                  
+   136 0000012D F2440F10E0              movsd xmm12, xmm0 ; mov xmm 12 onto xmm0
+   137 00000132 F2450F59E7              mulsd xmm12, xmm15 ; A * B = Replaces A with result
+   138 00000137 F2450F59E6              mulsd xmm12, xmm14 ; A*B result * An
+   139 0000013C B802000000              mov rax, 2
+   140 00000141 F24C0F2AD8              cvtsi2sd xmm11, rax; xmm12 == area
+   141 00000146 F2450F5EE3              divsd xmm12,xmm11
+   142 0000014B F2440F112425-           movsd[area_], xmm12
+   142 00000151 [48000000]         
+   143                                  ;==============================================================================
+   144                                  ;area output
+   145 00000155 6A00                    push qword 0
+   146 00000157 B801000000              mov rax, 1
+   147 0000015C F20F100425-             movsd xmm0, [area_]
+   147 00000161 [48000000]         
+   148 00000165 48BF-                   mov rdi, area_output
+   148 00000167 [7401000000000000] 
+   149 0000016F E8(00000000)            call printf
+   150 00000174 58                      pop rax
+   151                                  
+   152                                  ;========================MATH PORTION =========================================
+   153                                  
+   154                                  
+   155                                  ;PARIMETER
+   156                                  ; missing side (C) = sqrt(A^2 + B^2 - 2AB*cos(x))
+   157                                  
+   158                                  ; xmm15 = A
+   159                                  ; xmm14 = B
+   160                                  ; xmm13 = angle (rad)
+   161 00000175 B802000000              mov rax, 2
+   162 0000017A F24C0F2AE0              cvtsi2sd xmm12, rax
+   163 0000017F F2450F59E7              mulsd xmm12, xmm15 ; xmm12 * xmm15 = result changes xmm12 number
+   164 00000184 F2450F59E6              mulsd xmm12, xmm14 ; xmm12 = 2AB
+   165                                  
+   166 00000189 F2450F10DF              movsd xmm11, xmm15 ; xmm11 * xmm12 = result(is stored in xmm11)
+   167 0000018E F2450F59DB              mulsd xmm11, xmm11 ; xmm11 = A^2
+   168                                  
+   169 00000193 F2450F10D6              movsd xmm10, xmm14
+   170 00000198 F2450F59D2              mulsd xmm10, xmm10 ; xmm10 = B^2
+   171                                  
+   172                                  ; cos(x)
+   173 0000019D F2410F10C5              movsd xmm0, xmm13
+   174 000001A2 E8(00000000)            call cos ; xmm0 = cos(x)
+   175                                  
+   176 000001A7 B801000000              mov rax, 1
+   177 000001AC F24C0F2AC8              cvtsi2sd xmm9, rax
+   178 000001B1 F2450F59CC              mulsd xmm9, xmm12 ; xmm9 = -2AB
+   179 000001B6 F2440F59C8              mulsd xmm9, xmm0 ; xmm9 = -2AB*cos(x)
+   180 000001BB F2450F58CA              addsd xmm9, xmm10
+   181 000001C0 F2450F58CB              addsd xmm9, xmm11 ; xmm9 = A^2 + B^2 - 2AB*cos(x)
+   182 000001C5 F2450F51C9              sqrtsd xmm9, xmm9 ; xmm9 = missing side (C)
+   183                                  
+   184                                  ;; add our sides!
+   185 000001CA F2450F58CF              addsd xmm9, xmm15; adds xmm9 with 15, xmm9 number is channged with result
+   186 000001CF F2450F58CE              addsd xmm9, xmm14; --- xmm9 = perimeter ---
+   187                                  
+   188 000001D4 F2440F110C25-           movsd [perimeter], xmm9 ; store for later
+   188 000001DA [40000000]         
+   189                                  
+   190                                  ;call perimeter
+   191 000001DE 6A00                    push qword 0
+   192 000001E0 B801000000              mov rax, 1
+   193 000001E5 F20F100425-             movsd xmm0, [perimeter]
+   193 000001EA [40000000]         
+   194 000001EE 48BF-                   mov rdi, parimeter_output
+   194 000001F0 [A501000000000000] 
+   195 000001F8 E8(00000000)            call printf
+   196 000001FD 58                      pop rax
+   197                                  
+   198                                  ;goodbye outputs
+   199 000001FE 6A00                    push qword 0
+   200 00000200 B800000000              mov rax,0
+   201 00000205 48BF-                   mov rdi, goodbye_output
+   201 00000207 [CA01000000000000] 
+   202 0000020F E8(00000000)            call printf
+   203 00000214 58                      pop rax
+   204                                  
+   205 00000215 6A00                    push qword 0
+   206 00000217 F20F100425-             movsd xmm0, [area_]
+   206 0000021C [48000000]         
+   207 00000220 58                      pop rax
+   208 00000221 58                      pop rax
+   209                                  
+   210                                  ;=========================PRINTING RESULTS=====================================
+   211                                  ;movsd xmm0, [perimeter]
+   212                                  ;movsd xmm1, [area_]
+   213                                  
+   214                                  ;Restore the original values to the GPRs
+   215 00000222 9D                      popf                                                        ;Restore rflags
+   216 00000223 415F                    pop        r15                                              ;Restore r15
+   217 00000225 415E                    pop        r14                                              ;Restore r14
+   218 00000227 415D                    pop        r13                                              ;Restore r13
+   219 00000229 415C                    pop        r12                                              ;Restore r12
+   220 0000022B 415B                    pop        r11                                              ;Restore r11
+   221 0000022D 415A                    pop        r10                                              ;Restore r10
+   222 0000022F 4159                    pop        r9                                               ;Restore r9
+   223 00000231 4158                    pop        r8                                               ;Restore r8
+   224 00000233 5F                      pop        rdi                                              ;Restore rdi
+   225 00000234 5E                      pop        rsi                                              ;Restore rsi
+   226 00000235 5A                      pop        rdx                                              ;Restore rdx
+   227 00000236 59                      pop        rcx                                              ;Restore rcx
+   228 00000237 5B                      pop        rbx                                              ;Restore rbx
+   229 00000238 5D                      pop        rbp                                              ;Restore rbp
+   230 00000239 C3                      ret
